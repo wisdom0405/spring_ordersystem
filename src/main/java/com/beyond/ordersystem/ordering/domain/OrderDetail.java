@@ -1,5 +1,6 @@
 package com.beyond.ordersystem.ordering.domain;
 
+import com.beyond.ordersystem.ordering.dto.OrderingListResDto;
 import com.beyond.ordersystem.product.domain.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,11 +24,19 @@ public class OrderDetail {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ordering_id")
-    private Ordering ordering;
+    private Ordering ordering; // 실질적으로는 DB에 ordering_id로 들어감
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
-    private Product product;
+    private Product product; // 실질적으로는 DB에 product_id로 들어감
+
+    public OrderingListResDto.OrderDetailDto fromEntity(){
+        return OrderingListResDto.OrderDetailDto.builder()
+                .id(this.id)
+                .productName(this.product.getName())
+                .count(this.quantity)
+                .build();
+    }
 }
 
 

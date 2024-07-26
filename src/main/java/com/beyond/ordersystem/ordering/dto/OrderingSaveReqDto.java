@@ -21,10 +21,17 @@ public class OrderingSaveReqDto {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    @Builder
+    @Builder // 객체 안에 리스트가 들어있는 형태이므로 내부클래스로 OrderDetailDto 구현
     public static class OrderDetailDto{
         private Long productId; // 상품id
         private Integer productCount; // 주문상품개수
+    }
+
+    public Ordering toEntity(Member member){
+        return Ordering.builder()
+                .member(member)
+//                .orderStatus(OrderStatus.ORDERED)
+                .build();
     }
 
 }

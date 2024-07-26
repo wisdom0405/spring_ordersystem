@@ -26,11 +26,15 @@ public class Product extends BaseTimeEntity{
     private Integer stockQuantity;
     private String imagePath;
 
-    @OneToMany(mappedBy = "products", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<OrderDetail> orderDetails;
 
     public void updateImagePath(String imagePath){
         this.imagePath = imagePath;
+    }
+
+    public void updateStockQuantity(int quantity){
+        this.stockQuantity = this.stockQuantity - quantity;
     }
 
     public ProductResDto fromEntity(){

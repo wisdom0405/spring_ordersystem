@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/ordersystem/product")
+//@RequestMapping("/ordersystem/product")
 public class ProductController {
 
     private final ProductService productService;
@@ -26,7 +26,7 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @PostMapping("/create")
+    @PostMapping("product/create")
     // 둘다 json으로 받고 싶으면 @RequestPart ProductSaveReqDto dto, @RequestPart MultipartFile productImage
     public ResponseEntity<Object> registerProduct(@ModelAttribute ProductSaveReqDto dto){ // multipart form data형식으로 받음
         Product product = productService.productCreate(dto);
@@ -35,7 +35,7 @@ public class ProductController {
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED); //header에 들어가는 상태
     }
 
-    @GetMapping("/list")
+    @GetMapping("product/list")
     public ResponseEntity<Object> productList(Pageable pageable){
         Page<ProductResDto> dtos = productService.productList(pageable);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "상품리스트 정상조회 완료",dtos);

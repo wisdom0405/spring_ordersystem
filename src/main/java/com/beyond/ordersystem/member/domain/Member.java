@@ -26,14 +26,15 @@ public class Member extends BaseTimeEntity {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(length = 20, nullable = false)
+    @Column(nullable = false)
     private String password;
 
     @Embedded
     private Address address;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    @Builder.Default // 이렇게하면 build할 때 초기화된 값(OREDERED)으로 세팅됨
+    private Role role = Role.USER;
 
     public MemberResDto FromEntity(){
         MemberResDto memberResDto = MemberResDto.builder()

@@ -1,6 +1,7 @@
 package com.beyond.ordersystem.ordering.domain;
 
 import com.beyond.ordersystem.member.domain.Member;
+import com.beyond.ordersystem.ordering.dto.OrderingListResDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,12 +24,32 @@ public class Ordering {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="member_id")
-    private Member member;
+    private Member member; // DB에서 member객체 만들어서 주입
 
-    private OrderStatus orderStatus;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default // 이렇게하면 build할 때 초기화된 값(ORDERED)으로 세팅됨
+    private OrderStatus orderStatus = OrderStatus.ORDERED;
 
     @OneToMany(mappedBy = "ordering", cascade = CascadeType.PERSIST)
+    // Builder 패턴에서도 ArrayList로 초기화되도록 하는 설정
 //    @Builder.Default
     private List<OrderDetail> orderDetails;
+
+    public OrderingListResDto fromEntity(){
+        List<OrderDetail> orderDetailList = this.getOrderDetails();
+        List<OrderingListResDto.OrderDetailDto> orderDetailDtos = new ArrayList<>();
+
+        for(OrderDetail orderDetail : orderDetailList){
+            orderDetailDtos.add(orderDetail.fromEntity());
+        }
+
+        OrderingListResDto orderingListResDto = OrderingListResDto.builder()
+                .id(this.id)
+                .memberEmail(this.getMember().getEmail())
+                .orderStatus(this.orderStatus)
+                .orderDetailDtos(orderDetailDtos)
+                .build();
+        return orderingListResDto;
+    }
 
 }
