@@ -33,8 +33,8 @@ public class Member extends BaseTimeEntity {
     private Address address;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default // 이렇게하면 build할 때 초기화된 값(OREDERED)으로 세팅됨
-    private Role role = Role.USER;
+//    @Builder.Default // 이렇게하면 build할 때 초기화된 값(OREDERED)으로 세팅됨
+    private Role role;
 
     public MemberResDto FromEntity(){
         MemberResDto memberResDto = MemberResDto.builder()
@@ -42,6 +42,7 @@ public class Member extends BaseTimeEntity {
                                             .name(this.name)
                                             .email(this.email)
                                             .address(this.address)
+                                            .role(this.role)
                                             .build();
         return memberResDto;
     }

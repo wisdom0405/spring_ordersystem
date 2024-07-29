@@ -29,12 +29,14 @@ public class MemberSaveReqDto {
 
     private Address address;
 
+    private Role role = Role.USER;
+
     public Member toEntity(String password){
         Member member = Member.builder()
                 .name(this.name)
                 .email(this.email)
                 .password(password)
-//                .role(Role.USER)
+                .role(this.role)
                 .address(this.address)
                 .build();
         return member;

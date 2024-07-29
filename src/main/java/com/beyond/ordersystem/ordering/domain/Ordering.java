@@ -52,4 +52,8 @@ public class Ordering {
         return orderingListResDto;
     }
 
+    public void updateSatus(OrderStatus orderStatus){
+        this.orderStatus = orderStatus;
+    }
+
 }

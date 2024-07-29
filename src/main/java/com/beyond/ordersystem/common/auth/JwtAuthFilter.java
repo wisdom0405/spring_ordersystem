@@ -35,8 +35,7 @@ public class JwtAuthFilter extends GenericFilter {
         // 토큰은 헤더부에 들어간다.
         String bearerToken = ((HttpServletRequest)request).getHeader("Authorization");
 
-        try{
-
+        try{ // AccessToken 검증
             if(bearerToken != null){
                 // token은 관례적으로 Bearer로 시작하는 문구를 넣어서 요청
                 if(!bearerToken.substring(0,7).equals("Bearer ")){
@@ -44,14 +43,15 @@ public class JwtAuthFilter extends GenericFilter {
                 }
                 String token = bearerToken.substring(7); // 7번째 자리 이후 글자만 잘라낸다.
                 // token 검증 및 claims 추출
-                // token 생성시에 사용한 secret키 값을 넣어 토큰 검증에 사용한다.
+                // token 생성시에 사용한 secret키 값을 넣어 토큰 검증에 사용한다. (비밀키를 넣어서 암호화 해서 만들어진 암호와 비교해봄)
                 Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody(); // payLoad에 있는 정보 (이메일, 권한 등..) => 이 한줄로 검증코드가 끝남
                 // Authentication 객체 생성 + UserDetails객체도 팔요 (인증정보 들어있음 - 이메일, 권한 등..)
 
                 List<GrantedAuthority> authorities = new ArrayList<>();
                 authorities.add(new SimpleGrantedAuthority("ROLE_"+claims.get("role")));
-                // UserDetails
+                // UserDetails (Subject() : email)
                 UserDetails userDetails = new User(claims.getSubject(), "", authorities);
+                // Authentication 객체 만드는 이유 : 전역적으로 만들어서 사용하기 위해 만듦 (이 사용자가 누군지 식별하기 위해)
                 Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails,"",userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
