@@ -48,6 +48,27 @@ public class ProductService {
         return product;
     }
 
+    public Product productAwsCreate(ProductSaveReqDto dto){
+        MultipartFile image = dto.getProductImage();
+        Product product = null;
+        try{
+            product = productRepository.save(dto.toEntity());
+            byte[] bytes = image.getBytes();
+            // 경로지정
+            Path path = Paths.get("/Users/wisdom/Documents/GitHub/spring_ordersystem/src/main/java/com/beyond/ordersystem/product/tmp/",
+                    product.getId() +"_"+
+                            image.getOriginalFilename());
+            // 파일 쓰기
+            Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE); // 해당경로에 bytes 저장
+            product.updateImagePath(path.toString());
+
+        }catch (IOException e){
+            throw new RuntimeException("이미지 저장실패");
+        }
+        return product;
+    }
+
+
     public Page<ProductResDto> productList(Pageable pageable){
         Page<Product> products = productRepository.findAll(pageable);
         Page<ProductResDto> productResDtos = products.map(a->a.fromEntity());

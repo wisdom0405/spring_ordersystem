@@ -46,7 +46,7 @@ public class JwtTokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now) // 생성시간
                 .setExpiration(new Date(now.getTime() + expirationRt * 60 * 1000L)) // 만료시간(밀리초 단위 세팅) : 30분
-                .signWith(SignatureAlgorithm.HS256, secretKeyRt)
+                .signWith(SignatureAlgorithm.HS256, secretKeyRt) // 서명부
                 .compact();
         return token;
     }

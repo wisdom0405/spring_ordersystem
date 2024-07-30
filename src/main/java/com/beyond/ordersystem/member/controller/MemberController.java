@@ -118,7 +118,7 @@ public class MemberController {
         String email = claims.getSubject();
         String role = claims.get("role").toString();
 
-        // redis를 조회하여 rt 추가 검증(이메일로 조회해서 rt와 비교)
+        // redis를 조회하여 rt 추가 검증(이메일로 조회해서 rt와 비교) - 토큰탈취 방지하는 안정장치, 메모리에 저장하면 날라갈수도있다
         Object obj = redisTemplate.opsForValue().get(email);
         if(obj == null || !obj.toString().equals(rt)){
             return new ResponseEntity<>(new CommonErrorDto(HttpStatus.UNAUTHORIZED.value(),"invalid refresh token"), HttpStatus.UNAUTHORIZED);
