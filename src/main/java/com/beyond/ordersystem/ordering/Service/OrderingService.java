@@ -1,5 +1,6 @@
 package com.beyond.ordersystem.ordering.Service;
 
+import com.beyond.ordersystem.common.service.StockInventoryService;
 import com.beyond.ordersystem.member.domain.Member;
 import com.beyond.ordersystem.member.repository.MemberRepository;
 import com.beyond.ordersystem.ordering.Repository.OrderDetailRepository;
@@ -9,6 +10,7 @@ import com.beyond.ordersystem.ordering.domain.OrderStatus;
 import com.beyond.ordersystem.ordering.domain.Ordering;
 import com.beyond.ordersystem.ordering.dto.OrderingListResDto;
 import com.beyond.ordersystem.ordering.dto.OrderingSaveReqDto;
+import com.beyond.ordersystem.ordering.dto.StockDecreaseEvent;
 import com.beyond.ordersystem.product.Repository.ProductRepository;
 import com.beyond.ordersystem.product.domain.Product;
 import org.hibernate.criterion.Order;
@@ -30,15 +32,21 @@ public class OrderingService {
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final StockInventoryService stockInventoryService;
+    private final StockDecreaseEventHandler stockDecreaseEventHandler;
 
     public OrderingService(OrderingRepository orderingRepository,
                            MemberRepository memberRepository,
                            ProductRepository productRepository,
-                           OrderDetailRepository orderDetailRepository) {
+                           OrderDetailRepository orderDetailRepository,
+                           StockInventoryService stockInventoryService,
+                           StockDecreaseEventHandler stockDecreaseEventHandler) {
         this.orderingRepository = orderingRepository;
         this.memberRepository = memberRepository;
         this.productRepository = productRepository;
         this.orderDetailRepository = orderDetailRepository;
+        this.stockInventoryService = stockInventoryService;
+        this.stockDecreaseEventHandler = stockDecreaseEventHandler;
     }
 
 //    public Ordering orderCreate(OrderingSaveReqDto dto){
@@ -61,6 +69,7 @@ public class OrderingService {
 //        return ordering;
 //    }
 
+    // syncronized를 설정한다 하더라도, 재고 감소가 DB에 반영되는 시점은 트랜잭션이 커밋되고 종료되는 시점
     // 방법2. JPA에 최적화된 방식
     public Ordering orderCreate(List<OrderingSaveReqDto> dtos){
 //        List<OrderingSaveReqDto.OrderDetailDto> orderDetailDtoList = dto.getOrderDetailDtoList();
@@ -83,17 +92,28 @@ public class OrderingService {
                 .orderDetails(new ArrayList<>()) // 아직 아무것도 안들어간 orderDetail 리스트
                 .build();
 
+        // 재고감소, 재고 저장에서 동시성이슈 생길 수 있음
         for (OrderingSaveReqDto dto : dtos){ // OrderingSaveReqDto의 orderDetailDto리스트 요소 하나씩 꺼내옴
             // OrderDetailDto에 딸린 productId를 가지고 product 객체 찾음
             Product product = productRepository.findById(dto.getProductId()).orElseThrow(()->new EntityNotFoundException("product is not found"));
 
             int quantity = dto.getProductCount();
-            if(product.getStockQuantity() < quantity){
-                throw new IllegalArgumentException("재고부족");
+            // redis를 통한 재고관리 및 재고잔량 확인
+            if (product.getName().contains("sale")) {
+                int newQuantity = (stockInventoryService.decreaseStock(dto.getProductId(), dto.getProductCount())).intValue(); // Long -> int로 형변환
+                if(newQuantity < 0){
+                    throw new IllegalArgumentException("재고부족");
+                }
+                stockDecreaseEventHandler.publish(new StockDecreaseEvent(product.getId(), dto.getProductCount()));
+                // rdb에 재고를 업데이트 -> 이벤트 기반의 아키텍처 구상
+                // rabbitmq를 통해 비동기적으로 이벤트 처리(발생하는 액션기반)
+            }else{
+                if(product.getStockQuantity() < quantity){ // 재고감소 시키는 코드
+                    throw new IllegalArgumentException("재고부족");
+                }
+                // 추가사항이면 save 해줘야하지만 update이므로 save 해줄 필요없음(더티체킹)
+                product.updateStockQuantity(quantity); // 변경감지(dirty checking)로 인해 save 해줄필요 없음
             }
-
-            // 추가사항이면 save 해줘야하지만 update이므로 save 해줄 필요없음(더티체킹)
-            product.updateStockQuantity(quantity); // 변경감지(dirty checking)로 인해 save 해줄필요 없음
 
             OrderDetail orderDetail = OrderDetail.builder() // 주문상세 OrderDetail 객체 조립
                     .product(product)

@@ -26,7 +26,7 @@ public class SecurityConfigs {
                 // eg) localhost : 8080 과 localhost:8081 통신불가(오류반환)
                 .httpBasic().disable()
                 .authorizeRequests()
-                    .antMatchers("/member/create", "/", "/doLogin", "/refresh-token")// 예외 url : 회원가입, 홈, 로그인
+                    .antMatchers("/member/create", "/", "/doLogin", "/refresh-token","/product/list")// 예외 url : 회원가입, 홈, 로그인
                     .permitAll() // 나머지는 인증처리
                 .anyRequest().authenticated()
                 .and()
