@@ -22,7 +22,8 @@ public class RedisConfig {
     public int port;
 
     @Bean
-    @Qualifier("2") // default : 1
+    @Qualifier("2") // default : 1 (Bean의 식별자)
+    // Qualifier는 주로 여러 Bean이 정의된 경우 특정 Bean을 주입받기 위해 사용된다.
     // RedisConnectionFactory는 Redis서버와의 연결을 설정하는 역할 (정보성 요소)
     // LettuceConnectionFactory는 RedisConnectionFactory의 구현체로서 실질적인 역할 수행
     public RedisConnectionFactory redisConnectionFactory(){
@@ -66,13 +67,15 @@ public class RedisConfig {
     }
 
     // redisTemplate은 redis와 상호작용할 때 redis key,value의 형식을 정의 (실질적으로 데이터를 넣는 곳)
+    // RedisTemplate : Redis와 상호작용하기 위한 템플릿으로, 데이터의 직렬화 방식과 연결팩토리를 설정한다.
+    // key는 문자열로 직렬화하고 값은 JSON 형태로 직렬화 한다.
     @Bean
     @Qualifier("3")
     public RedisTemplate<String, Object> stockRedisTemplate(@Qualifier("3") RedisConnectionFactory redisConnectionFactory){
         // Object : 보통 json형태의 데이터가 들어올 것
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setKeySerializer(new StringRedisSerializer()); // String 형태를 직렬화 시키겠다. (String으로 직렬화)
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer()); //json으로 직렬화
+        redisTemplate.setKeySerializer(new StringRedisSerializer()); // String 형태를 직렬화 시키겠다. (String으로 직렬화), Redis의 키를 문자열로 직렬화
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer()); //json으로 직렬화, Redis의 값을 JSON형태로 직렬화
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         return redisTemplate;
     }

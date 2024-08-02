@@ -50,6 +50,7 @@ public class MemberController {
         this.redisTemplate = redisTemplate;
     }
 
+    // @Valid 어노테이션: Spring MVC와 Spring Boot에서 사용되는 유효성 검증 어노테이션으로, 메서드의 매개변수나 필드에 적용하여 객체의 유효성을 자동으로 검증
     @PostMapping("member/create")
     public ResponseEntity<Object> memberCreate(@Valid @RequestBody MemberSaveReqDto dto){
         Member member = memberService.memberCreate(dto);
@@ -58,10 +59,12 @@ public class MemberController {
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED); //header에 들어가는 상태
     }
 
-    // 회원관리 목적 -> admin만 회원목록 전체조회 가능하도록 함
+    // @PreAuthorize 어노테이션은 Spring Security에서 메서드 레벨에서 접근 제어를 구현하는 데 사용
+    // Spring Security는 기본적으로 ROLE_ 접두사를 자동으로 추가
+    // 회원관리 목적 -> admin만 회원목록 전체조회 가능하도록 함 (메서드 접근 권한 제어)
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("member/list")
-    public ResponseEntity<Object> productList(Pageable pageable){
+    public ResponseEntity<Object> memberList(Pageable pageable){
         Page<MemberResDto> memberResDtos = memberService.memberList(pageable);
         // body에 들어가는 HttpStatus상태
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "memberList 조회 성공", memberResDtos);
