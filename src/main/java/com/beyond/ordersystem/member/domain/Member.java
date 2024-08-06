@@ -3,12 +3,14 @@ package com.beyond.ordersystem.member.domain;
 import com.beyond.ordersystem.common.domain.Address;
 import com.beyond.ordersystem.common.domain.BaseTimeEntity;
 import com.beyond.ordersystem.member.dto.MemberResDto;
+import com.beyond.ordersystem.ordering.domain.Ordering;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -32,6 +34,9 @@ public class Member extends BaseTimeEntity {
     @Embedded
     private Address address;
 
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY)
+    private List<Ordering> orderingList;
+
     @Enumerated(EnumType.STRING)
 //    @Builder.Default // 이렇게하면 build할 때 초기화된 값(OREDERED)으로 세팅됨
     private Role role;
@@ -43,6 +48,7 @@ public class Member extends BaseTimeEntity {
                                             .email(this.email)
                                             .address(this.address)
                                             .role(this.role)
+                                            .orderCount(this.orderingList.size())
                                             .build();
         return memberResDto;
     }
