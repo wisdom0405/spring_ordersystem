@@ -46,4 +46,8 @@ public class Member extends BaseTimeEntity {
                                             .build();
         return memberResDto;
     }
+
+    public void updatePassword(String newPassword){
+        this.password = newPassword;
+    }
 }

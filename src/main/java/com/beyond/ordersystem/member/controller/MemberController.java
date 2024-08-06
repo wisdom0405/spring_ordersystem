@@ -4,10 +4,7 @@ import com.beyond.ordersystem.common.auth.JwtTokenProvider;
 import com.beyond.ordersystem.common.dto.CommonErrorDto;
 import com.beyond.ordersystem.common.dto.CommonResDto;
 import com.beyond.ordersystem.member.domain.Member;
-import com.beyond.ordersystem.member.dto.MemberLoginDto;
-import com.beyond.ordersystem.member.dto.MemberRefreshDto;
-import com.beyond.ordersystem.member.dto.MemberResDto;
-import com.beyond.ordersystem.member.dto.MemberSaveReqDto;
+import com.beyond.ordersystem.member.dto.*;
 import com.beyond.ordersystem.member.service.MemberService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -115,7 +112,7 @@ public class MemberController {
             // JwtAuthFilter에서 검증하는 코드 긁어옴
             claims = Jwts.parser().setSigningKey(secretKeyRt).parseClaimsJws(rt).getBody(); // payLoad에 있는 정보 (이메일, 권한 등..) => 이 한줄로 검증코드가 끝남
         }catch (Exception e){
-               return new ResponseEntity<>(new CommonErrorDto(HttpStatus.UNAUTHORIZED.value(),"invalid refresh token"), HttpStatus.UNAUTHORIZED);
+               return new ResponseEntity<>(new CommonErrorDto(HttpStatus.BAD_REQUEST.value(),"invalid refresh token"), HttpStatus.BAD_REQUEST);
         }
 
         String email = claims.getSubject();
@@ -124,7 +121,7 @@ public class MemberController {
         // redis를 조회하여 rt 추가 검증(이메일로 조회해서 rt와 비교) - 토큰탈취 방지하는 안정장치, 메모리에 저장하면 날라갈수도있다
         Object obj = redisTemplate.opsForValue().get(email);
         if(obj == null || !obj.toString().equals(rt)){
-            return new ResponseEntity<>(new CommonErrorDto(HttpStatus.UNAUTHORIZED.value(),"invalid refresh token"), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(new CommonErrorDto(HttpStatus.BAD_REQUEST.value(),"invalid refresh token"), HttpStatus.BAD_REQUEST);
         }
 
         // 새로운 access Token 받아냄
@@ -136,6 +133,13 @@ public class MemberController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "at is renewed", info);
 
         return new ResponseEntity<>(commonResDto ,HttpStatus.OK);
+    }
+
+    @PatchMapping("member/reset-password")
+    public ResponseEntity<Object> resetPassword(@RequestBody ResetPassWordDto dto){
+        memberService.resetPassword(dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "비밀번호가 성공적으로 변경되었습니다.","ok");
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
 }
