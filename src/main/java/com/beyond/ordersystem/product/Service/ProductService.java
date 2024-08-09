@@ -56,7 +56,7 @@ public class ProductService {
             product = productRepository.save(dto.toEntity());
             byte[] bytes = image.getBytes();
             // 경로지정
-            Path path = Paths.get("/Users/wisdom/Documents/GitHub/spring_ordersystem/src/main/java/com/beyond/ordersystem/product/tmp/",
+            Path path = Paths.get("/Users/wisdom/Documents/ordersystem_img/",
                     product.getId() +"_"+
                     image.getOriginalFilename());
             // 파일 쓰기
@@ -82,7 +82,7 @@ public class ProductService {
             byte[] bytes = image.getBytes();
             String fileName = product.getId() + "_" + image.getOriginalFilename();
             // 경로지정
-            Path path = Paths.get("/Users/wisdom/Documents/GitHub/spring_ordersystem/src/main/java/com/beyond/ordersystem/product/tmp/",fileName);
+            Path path = Paths.get("/Users/wisdom/Documents/ordersystem_img/",fileName);
 
             // local PC에 임시저장 : 파일 쓰기
             Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE); // 해당경로에 bytes 저장
