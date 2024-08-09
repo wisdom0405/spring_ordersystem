@@ -1,6 +1,8 @@
 package com.beyond.ordersystem.common.configs;
 
 
+import com.beyond.ordersystem.ordering.Controller.SseController;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +11,10 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -78,6 +83,45 @@ public class RedisConfig {
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer()); //json으로 직렬화, Redis의 값을 JSON형태로 직렬화
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         return redisTemplate;
+    }
+
+    @Bean
+    @Qualifier("4") // default : 1
+    public RedisConnectionFactory sseFactory(){
+        // 유연하게 사용
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+        configuration.setHostName(host);
+        configuration.setPort(port);
+        configuration.setDatabase(3);
+//        configuration.setPassword("1234");
+        return new LettuceConnectionFactory(configuration);
+    }
+
+    @Bean
+    @Qualifier("4")
+    public RedisTemplate<String, Object> sseRedisTemplate(@Qualifier("4") RedisConnectionFactory sseFactory){
+        // Object : 보통 json형태의 데이터가 들어올 것
+        // key : email, value : json형태의 dto
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer()); // String 형태를 직렬화 시키겠다. (String으로 직렬화), Redis의 키를 문자열로 직렬화
+
+        // dto의 구조가 객체안에 객체가 있으므로(직렬화 이슈) 아래와 같이 serializer 커스텀
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        serializer.setObjectMapper(objectMapper);
+
+        redisTemplate.setValueSerializer(serializer);
+        redisTemplate.setConnectionFactory(sseFactory);
+        return redisTemplate;
+    }
+
+    // 리스너 객체 생성
+    @Bean
+    @Qualifier("4")
+    public RedisMessageListenerContainer redisMessageListenerContainer(@Qualifier("4")RedisConnectionFactory sseFactory){
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(sseFactory);
+        return container;
     }
 
 

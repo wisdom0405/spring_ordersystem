@@ -3,6 +3,7 @@ package com.beyond.ordersystem.ordering.Service;
 import com.beyond.ordersystem.common.service.StockInventoryService;
 import com.beyond.ordersystem.member.domain.Member;
 import com.beyond.ordersystem.member.repository.MemberRepository;
+import com.beyond.ordersystem.ordering.Controller.SseController;
 import com.beyond.ordersystem.ordering.Repository.OrderDetailRepository;
 import com.beyond.ordersystem.ordering.Repository.OrderingRepository;
 import com.beyond.ordersystem.ordering.domain.OrderDetail;
@@ -34,19 +35,21 @@ public class OrderingService {
     private final OrderDetailRepository orderDetailRepository;
     private final StockInventoryService stockInventoryService;
     private final StockDecreaseEventHandler stockDecreaseEventHandler;
+    private final SseController sseController;
 
     public OrderingService(OrderingRepository orderingRepository,
                            MemberRepository memberRepository,
                            ProductRepository productRepository,
                            OrderDetailRepository orderDetailRepository,
                            StockInventoryService stockInventoryService,
-                           StockDecreaseEventHandler stockDecreaseEventHandler) {
+                           StockDecreaseEventHandler stockDecreaseEventHandler, SseController sseController) {
         this.orderingRepository = orderingRepository;
         this.memberRepository = memberRepository;
         this.productRepository = productRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.stockInventoryService = stockInventoryService;
         this.stockDecreaseEventHandler = stockDecreaseEventHandler;
+        this.sseController = sseController;
     }
 
 //    public Ordering orderCreate(OrderingSaveReqDto dto){
@@ -126,6 +129,7 @@ public class OrderingService {
 
         Ordering savedOrdering = orderingRepository.save(ordering); // 여기서 save해줘도 jpa에 의해서 선후관계 알아서 맞춰서 처리해주기 때문에 코드의 선후관계 안따져도 OK
         // 이제 Ordering 객체를 save 해줬으므로 Ordering 객체의 id값 나올 것 -> 이후 필요한 요소 jpa가 알아서 순서를 처리해준다.
+        sseController.publishMessage(savedOrdering.fromEntity(), "admin@test.com");
         return savedOrdering;
     }
 

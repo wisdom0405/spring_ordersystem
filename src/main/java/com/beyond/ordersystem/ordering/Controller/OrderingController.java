@@ -52,7 +52,7 @@ public class OrderingController {
     // admin 사용자가 주문취소 : order/{id}/cancel -> orderStatus만 변경
     @PatchMapping("order/{id}/cancel")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Object> orderCancle (@PathVariable Long id){
+    public ResponseEntity<Object> orderCancel (@PathVariable Long id){
         Ordering ordering = orderingService.orderCancel(id);
 
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "정상 취소", ordering.getId());

@@ -5,6 +5,7 @@ import com.beyond.ordersystem.product.Service.ProductService;
 import com.beyond.ordersystem.product.domain.Product;
 import com.beyond.ordersystem.product.dto.ProductResDto;
 import com.beyond.ordersystem.product.dto.ProductSaveReqDto;
+import com.beyond.ordersystem.product.dto.ProductSearchDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,10 +39,12 @@ public class ProductController {
     }
 
     @GetMapping("product/list")
-    public ResponseEntity<Object> productList(Pageable pageable){
-        Page<ProductResDto> dtos = productService.productList(pageable);
+    public ResponseEntity<Object> productList(ProductSearchDto searchDto, Pageable pageable){
+        Page<ProductResDto> dtos = productService.productList(searchDto, pageable);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "상품리스트 정상조회 완료",dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
+
 
 }

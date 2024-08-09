@@ -4,10 +4,12 @@ import com.beyond.ordersystem.product.Repository.ProductRepository;
 import com.beyond.ordersystem.product.domain.Product;
 import com.beyond.ordersystem.product.dto.ProductResDto;
 import com.beyond.ordersystem.product.dto.ProductSaveReqDto;
+import com.beyond.ordersystem.product.dto.ProductSearchDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,11 +18,16 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -97,8 +104,34 @@ public class ProductService {
     }
 
 
-    public Page<ProductResDto> productList(Pageable pageable){
-        Page<Product> products = productRepository.findAll(pageable);
+    public Page<ProductResDto> productList(ProductSearchDto searchDto, Pageable pageable){
+        // 검색을 위해 Specification 객체 사용
+        // Specification 객체는 복잡한 쿼리를 명세를 이용하여 정의하는 방식으로, 쿼리를 쉽게 생성
+        Specification<Product> specification = new Specification<Product>() {
+            @Override
+            public Predicate toPredicate(Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicates = new ArrayList<>();
+                if(searchDto.getSearchName() != null){
+                    // DB 컬럼 조회 : root - 엔티티의 속성 조회
+                    // root : 엔티티의 속성을 접근하기 위한 객체, CriteriaBuilder는 쿼리를 생성하기 위한 객체
+                    // select * from product where name like '%hong%';
+                    predicates.add(criteriaBuilder.like(root.get("name"), "%"+searchDto.getSearchName()+"%"));
+                }
+                if(searchDto.getCategory() != null){
+                    predicates.add(criteriaBuilder.like(root.get("category"), "%"+searchDto.getCategory()+"%"));
+                }
+                // where name like '%사과%' and category like '%fruit%';
+                Predicate[] predicatesArr = new Predicate[predicates.size()];
+                for(int i=0; i<predicatesArr.length; i++){
+                    predicatesArr[i] = predicates.get(i);
+                }
+                // 위 2개의 쿼리 조건문을 and 조건으로 연결
+                Predicate predicate = criteriaBuilder.and(predicatesArr);
+                return predicate;
+            }
+        };
+
+        Page<Product> products = productRepository.findAll(specification, pageable);
         Page<ProductResDto> productResDtos = products.map(a->a.fromEntity());
         return productResDtos;
     }
