@@ -3,7 +3,7 @@ name: deploy to ec2 with jar
 on:
   push:
     branches:
-      - main:
+      - main
 
 jobs:
   build-and-deploy:
