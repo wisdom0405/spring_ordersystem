@@ -34,7 +34,7 @@ public class OrderingService {
     private final ProductRepository productRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final StockInventoryService stockInventoryService;
-    private final StockDecreaseEventHandler stockDecreaseEventHandler;
+//    private final StockDecreaseEventHandler stockDecreaseEventHandler;
     private final SseController sseController;
 
     public OrderingService(OrderingRepository orderingRepository,
@@ -42,13 +42,14 @@ public class OrderingService {
                            ProductRepository productRepository,
                            OrderDetailRepository orderDetailRepository,
                            StockInventoryService stockInventoryService,
-                           StockDecreaseEventHandler stockDecreaseEventHandler, SseController sseController) {
+//                           StockDecreaseEventHandler stockDecreaseEventHandler,
+                           SseController sseController) {
         this.orderingRepository = orderingRepository;
         this.memberRepository = memberRepository;
         this.productRepository = productRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.stockInventoryService = stockInventoryService;
-        this.stockDecreaseEventHandler = stockDecreaseEventHandler;
+//        this.stockDecreaseEventHandler = stockDecreaseEventHandler;
         this.sseController = sseController;
     }
 
@@ -107,7 +108,7 @@ public class OrderingService {
                 if(newQuantity < 0){
                     throw new IllegalArgumentException("재고부족");
                 }
-                stockDecreaseEventHandler.publish(new StockDecreaseEvent(product.getId(), dto.getProductCount()));
+//                stockDecreaseEventHandler.publish(new StockDecreaseEvent(product.getId(), dto.getProductCount()));
                 // rdb에 재고를 업데이트 -> 이벤트 기반의 아키텍처 구상
                 // rabbitmq를 통해 비동기적으로 이벤트 처리(발생하는 액션기반)
             }else{

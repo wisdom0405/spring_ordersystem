@@ -15,7 +15,7 @@ public class CorsConfig implements WebMvcConfigurer { // WebMvcConfigurer : Spri
     @Override
     public void addCorsMappings(CorsRegistry corsRegistry){ // 허용 정책
         corsRegistry.addMapping("/**")
-                .allowedOrigins("http://localhost:8081") // 허용 url 명시
+                .allowedOrigins("http://www.wisdom0405.shop") // 허용 url 명시
                 .allowedMethods("*") // get요청, post요청 등
                 .allowedHeaders("*")
                 .allowCredentials(true); // 보안처리 할 것인지
