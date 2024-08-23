@@ -46,7 +46,7 @@ cloud:
   aws:
     credentials:
       access-key: test
-      secret-key: test
+      secret-key: testtest
     region:
       static : ap-northeast-2
     s3:
