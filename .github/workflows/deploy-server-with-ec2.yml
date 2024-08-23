@@ -27,8 +27,9 @@ jobs:
       - name: copy jar to ec2
         uses: appleboy/scp-action@master
         with:
-          host:
-          username:
-          key:
-          source:
-          target:
+          host: ec2-3-36-87-179.ap-northeast-2.compute.amazonaws.com
+          username: ubuntu
+          # pemkey를 통해 해당 인스턴스에 접근
+          key: ${{secrets.EC2_PEMKEY}}
+          source: "./build/libs/*.jar"
+          target: "/home/ubuntu"
