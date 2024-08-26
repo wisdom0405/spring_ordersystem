@@ -82,7 +82,7 @@ public class ProductService {
             byte[] bytes = image.getBytes();
             String fileName = product.getId() + "_" + image.getOriginalFilename();
             // 경로지정
-            Path path = Paths.get("/Users/wisdom/Documents/ordersystem_img/",fileName);
+            Path path = Paths.get("/tmp/",fileName);
 
             // local PC에 임시저장 : 파일 쓰기
             Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE); // 해당경로에 bytes 저장
