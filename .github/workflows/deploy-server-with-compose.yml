@@ -1,0 +1,26 @@
+name: deploy to ec2 with docker
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout branch
+        uses: actions/checkout@v2
+
+      - name: build image
+        working-directory: .
+        run: docker build -t wisdom0405/ordersystem:latest .
+
+      - name: dockerhub login
+        uses: docker/login-action@v1
+        with:
+          username: ${{secrets.DOCKER_EMAIL}}
+          password: ${{secrets.DOCKER_PASSWORD}}
+
+      - name: push to dockerhub
+        run: docker push wisdom0405/ordersystem:latest
+
