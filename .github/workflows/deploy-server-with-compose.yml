@@ -31,7 +31,7 @@ jobs:
           username: ubuntu
           key: ${{secrets.EC2_PEMKEY}}
           script: |
-            if ! type docker > /dev/null ; then
+            if ! type docker > /dev/null; then
               sudo snap install docker || echo "docker install failed"
             fi
             sudo docker login --username {{secrets.DOCKER_EMAIL}} --password ${{secrets.DOCKER_PASSWORD}}
