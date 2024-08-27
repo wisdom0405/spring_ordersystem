@@ -24,3 +24,16 @@ jobs:
       - name: push to dockerhub
         run: docker push wisdom0405/ordersystem:latest
 
+      - name: ec2 ssh login and docker compose update
+        uses: appleboy/ssh-action@master
+        with:
+          host: ec2-13-209-81-156.ap-northeast-2.compute.amazonaws.com
+          username: ubuntu
+          key: ${{secrets.EC2_PEMKEY}}
+          script: |
+            if ! type docker > /dev/null ; then
+              sudo snap install docker || echo "docker install failed"
+            fi
+            sudo docker login --username {{secrets.DOCKER_EMAIL}} --password ${{secrets.DOCKER_PASSWORD}}
+
+            sudo docker-compose pull && sudo docker-compose up -d
